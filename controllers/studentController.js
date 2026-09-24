@@ -1,8 +1,7 @@
 const Student = require("../models/studentSchema");
 const Course = require('../models/courseSchema');
-const mongoose = require("mongoose");
 
-let createStudent = async (req, res) => {
+const createStudent = async (req, res) => {
   try {
     let { name, email, phone, age } = req.body;
 
@@ -26,13 +25,12 @@ let createStudent = async (req, res) => {
 
     res.status(201).json(student);
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    if (error.name === 'ValidationError' || error.code === 11000) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message });
   }
 };
-
-// ==============================
 
 const getStudents = async (req, res) => {
   try {
@@ -43,17 +41,9 @@ const getStudents = async (req, res) => {
   }
 };
 
-// ===================================
 const getStudentById = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Student ID format",
-      });
-    }
 
     const student = await Student.findById(id).populate("enrolledCourses");
 
@@ -67,18 +57,9 @@ const getStudentById = async (req, res) => {
   }
 };
 
-// ===================================
-
 const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Student ID format",
-      });
-    }
 
     const student = await Student.findByIdAndUpdate(id, req.body, {
       new: true,
@@ -94,21 +75,16 @@ const updateStudent = async (req, res) => {
 
     res.status(200).json(student);
   } catch (error) {
+    if (error.name === 'ValidationError' || error.code === 11000) {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(500).json({ message: error.message });
   }
 };
-// ===================================
 
 const deleteStudent = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Student ID format",
-      });
-    }
 
     const student = await Student.findById(id);
 
@@ -135,15 +111,10 @@ const deleteStudent = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-// ===================================
 
 const enrollStudent = async (req, res) => {
     try {
         const { studentId, courseId } = req.params;
-
-        if (!mongoose.Types.ObjectId.isValid(studentId) || !mongoose.Types.ObjectId.isValid(courseId)) {
-            return res.status(400).json({ error: "Invalid ID format" });
-        }
 
         const student = await Student.findById(studentId);
         if (!student) {
@@ -155,26 +126,25 @@ const enrollStudent = async (req, res) => {
             return res.status(404).json({ error: "Course not found" });
         }
 
-        if (!course.isPublished) {
-            return res.status(400).json({ error: "Cannot enroll. Course is not published yet" });
-        }
-
         if (student.enrolledCourses.includes(courseId)) {
             return res.status(400).json({ error: "Student is already enrolled in this course" });
+        }
+
+        if (!course.isPublished) {
+            return res.status(400).json({ error: "Cannot enroll. Course is not published yet" });
         }
 
         student.enrolledCourses.push(courseId);
         await student.save();
 
-        res.status(200).json({ 
-            message: "Successfully enrolled in the course", 
-            student 
+        res.status(200).json({
+            message: "Successfully enrolled in the course",
+            student
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-// ===================================
 
 module.exports = {
   createStudent,

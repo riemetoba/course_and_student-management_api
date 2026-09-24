@@ -12,8 +12,8 @@ dbConnection()
 
 app.use(express.json())
 
-app.use('/api/v1/students', studentRoutes);
-app.use('/api/v1/courses', courseRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/courses', courseRoutes);
 
 let port = process.env.PORT || 5000
 

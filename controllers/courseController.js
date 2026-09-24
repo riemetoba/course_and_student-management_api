@@ -1,16 +1,15 @@
 const Course = require('../models/courseSchema');
 const Student = require("../models/studentSchema");
-const mongoose = require('mongoose');
 
 const createCourse = async (req, res) => {
     try {
         const { title, description, price, category, duration, isPublished } = req.body;
 
-        if (price <= 0) {
+        if (!price || price <= 0) {
             return res.status(400).json({ error: "Price must be greater than 0" });
         }
 
-        if (duration < 1) {
+        if (!duration || duration < 1) {
             return res.status(400).json({ error: "Duration must be 1 month or more" });
         }
 
@@ -24,6 +23,9 @@ const createCourse = async (req, res) => {
 
         res.status(201).json(course);
     } catch (error) {
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ error: error.message });
+        }
         res.status(500).json({ error: error.message });
     }
 };
@@ -41,12 +43,8 @@ const getCourseById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid Course ID format" });
-        }
-
         const course = await Course.findById(id);
-        
+
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
@@ -61,13 +59,9 @@ const updateCourse = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid Course ID format" });
-        }
-
-        const course = await Course.findByIdAndUpdate(id, req.body, { 
-            new: true, 
-            runValidators: true 
+        const course = await Course.findByIdAndUpdate(id, req.body, {
+            new: true,
+            runValidators: true
         });
 
         if (!course) {
@@ -76,6 +70,9 @@ const updateCourse = async (req, res) => {
 
         res.status(200).json(course);
     } catch (error) {
+        if (error.name === 'ValidationError' || error.code === 11000) {
+            return res.status(400).json({ error: error.message });
+        }
         res.status(500).json({ error: error.message });
     }
 };
@@ -84,12 +81,8 @@ const deleteCourse = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid Course ID format" });
-        }
-
         const course = await Course.findByIdAndDelete(id);
-        
+
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
@@ -104,12 +97,8 @@ const getCourseStudents = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid Course ID format" });
-        }
-
         const course = await Course.findById(id);
-        
+
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }

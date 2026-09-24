@@ -17,7 +17,8 @@ const courseSchema = new mongoose.Schema({
         required: true
     },
     duration: {
-        type: Number
+        type: Number,
+        require: true
     },
     isPublished: {
         type: Boolean,
