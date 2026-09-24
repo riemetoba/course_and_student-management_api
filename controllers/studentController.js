@@ -33,6 +33,15 @@ let createStudentController = async (req, res) => {
 
 // ==============================
 
+const getStudentsController = async (req, res) => {
+    try {
+        const students = await Student.find();
+        res.status(200).json(students);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
+// ===================================
 
-module.exports = { createStudentController };
+module.exports = { createStudentController, getStudentsController };
