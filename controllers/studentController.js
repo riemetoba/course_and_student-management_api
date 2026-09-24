@@ -1,4 +1,5 @@
 const Student = require("../models/studentSchema");
+const Course = require('../models/courseSchema');
 const mongoose = require("mongoose");
 
 let createStudent = async (req, res) => {
@@ -136,10 +137,50 @@ const deleteStudent = async (req, res) => {
 };
 // ===================================
 
+const enrollStudent = async (req, res) => {
+    try {
+        const { studentId, courseId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(studentId) || !mongoose.Types.ObjectId.isValid(courseId)) {
+            return res.status(400).json({ error: "Invalid ID format" });
+        }
+
+        const student = await Student.findById(studentId);
+        if (!student) {
+            return res.status(404).json({ error: "Student not found" });
+        }
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ error: "Course not found" });
+        }
+
+        if (!course.isPublished) {
+            return res.status(400).json({ error: "Cannot enroll. Course is not published yet" });
+        }
+
+        if (student.enrolledCourses.includes(courseId)) {
+            return res.status(400).json({ error: "Student is already enrolled in this course" });
+        }
+
+        student.enrolledCourses.push(courseId);
+        await student.save();
+
+        res.status(200).json({ 
+            message: "Successfully enrolled in the course", 
+            student 
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+// ===================================
+
 module.exports = {
   createStudent,
   getStudents,
   getStudentById,
   updateStudent,
-  deleteStudent
+  deleteStudent,
+  enrollStudent
 };

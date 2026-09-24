@@ -1,4 +1,5 @@
-const Course = require('../models/Course');
+const Course = require('../models/courseSchema');
+const Student = require("../models/studentSchema");
 const mongoose = require('mongoose');
 
 const createCourse = async (req, res) => {
@@ -99,10 +100,33 @@ const deleteCourse = async (req, res) => {
     }
 };
 
+const getCourseStudents = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid Course ID format" });
+        }
+
+        const course = await Course.findById(id);
+        
+        if (!course) {
+            return res.status(404).json({ error: "Course not found" });
+        }
+
+        const students = await Student.find({ enrolledCourses: id });
+
+        res.status(200).json(students);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     createCourse,
     getCourses,
     getCourseById,
     updateCourse,
-    deleteCourse
+    deleteCourse,
+    getCourseStudents
 };
