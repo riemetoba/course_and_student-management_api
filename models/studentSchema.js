@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
+const {Schema} = mongoose
 
-
-const studentSchema = new mongoose.Schema({
+const studentSchema = new Schema({
     name:{
         type: String,
         required: true
@@ -24,7 +24,7 @@ const studentSchema = new mongoose.Schema({
         default: true
     },
     enrolledCourses:[{
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Course'
     }]
 })

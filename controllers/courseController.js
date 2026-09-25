@@ -1,10 +1,10 @@
 const Course = require("../models/courseSchema");
 const Student = require("../models/studentSchema");
+const mongoose = require('mongoose');
 
 const createCourse = async (req, res) => {
   try {
-    const { title, description, price, category, duration, isPublished } =
-      req.body;
+    const { title, description, price, category, duration, isPublished } = req.body;
 
     if (!price || price <= 0) {
       return res.status(400).json({
@@ -28,31 +28,35 @@ const createCourse = async (req, res) => {
       });
     }
 
-    const course = new Course({
-      title,
-      description,
-      price,
-      category,
-      duration,
-      isPublished,
-    });
+    const course = new Course({ title, description, price, category, duration, isPublished });
     await course.save();
 
-    res.status(201).json(course);
+    res.status(201).json({
+      success: true,
+      message: "Course created successfully",
+      data: course,
+    });
   } catch (error) {
-    if (error.name === "ValidationError") {
-      return res.status(400).json({ error: error.message });
-    }
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
 const getCourses = async (req, res) => {
   try {
     const courses = await Course.find();
-    res.status(200).json(courses);
+    res.status(200).json({
+      success: true,
+      message: "Courses fetched successfully",
+      data: courses,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
@@ -60,15 +64,32 @@ const getCourseById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Course ID format",
+      });
+    }
+
     const course = await Course.findById(id);
 
     if (!course) {
-      return res.status(404).json({ error: "Course not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
     }
 
-    res.status(200).json(course);
+    res.status(200).json({
+      success: true,
+      message: "Course fetched successfully",
+      data: course,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
@@ -76,21 +97,35 @@ const updateCourse = async (req, res) => {
   try {
     const { id } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Course ID format",
+      });
+    }
+
     const course = await Course.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
     });
 
     if (!course) {
-      return res.status(404).json({ error: "Course not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
     }
 
-    res.status(200).json(course);
+    res.status(200).json({
+      success: true,
+      message: "Course updated successfully",
+      data: course,
+    });
   } catch (error) {
-    if (error.name === "ValidationError" || error.code === 11000) {
-      return res.status(400).json({ error: error.message });
-    }
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
@@ -98,10 +133,20 @@ const deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Course ID format",
+      });
+    }
+
     const course = await Course.findByIdAndDelete(id);
 
     if (!course) {
-      return res.status(404).json({ error: "Course not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
     }
 
     res.status(200).json({
@@ -109,13 +154,23 @@ const deleteCourse = async (req, res) => {
       message: "Course deleted successfully",
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
 const getCourseStudents = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Course ID format",
+      });
+    }
 
     const course = await Course.findById(id);
 
@@ -128,9 +183,16 @@ const getCourseStudents = async (req, res) => {
 
     const students = await Student.find({ enrolledCourses: id });
 
-    res.status(200).json(students);
+    res.status(200).json({
+      success: true,
+      message: "Enrolled students fetched successfully",
+      data: students,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 

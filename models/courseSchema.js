@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-
-const courseSchema = new mongoose.Schema({
+const {Schema} = mongoose
+const courseSchema = new Schema({
     title: {
         type: String,
         required: true
@@ -18,7 +18,7 @@ const courseSchema = new mongoose.Schema({
     },
     duration: {
         type: Number,
-        require: true
+        required: true
     },
     isPublished: {
         type: Boolean,
