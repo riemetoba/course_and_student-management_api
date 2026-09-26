@@ -37,6 +37,7 @@ const createStudent = async (req, res) => {
   }
 };
 
+
 const getStudents = async (req, res) => {
   try {
     const students = await Student.find();
@@ -52,6 +53,7 @@ const getStudents = async (req, res) => {
     });
   }
 };
+
 
 const getStudentById = async (req, res) => {
   try {
@@ -85,6 +87,7 @@ const getStudentById = async (req, res) => {
     });
   }
 };
+
 
 const updateStudent = async (req, res) => {
   try {
@@ -230,3 +233,6 @@ module.exports = {
   deleteStudent,
   enrollStudent,
 };
+
+
+
